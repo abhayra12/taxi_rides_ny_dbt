@@ -1,0 +1,14 @@
+version: '2'
+services:
+  dbt:
+    build: .
+    volumes:
+      - .:/usr/app/dbt
+    env_file:
+      - .env
+    networks:
+      - dbt-network
+
+networks:
+  dbt-network:
+    driver: bridge
