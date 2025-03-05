@@ -7,43 +7,51 @@ on:
 
 jobs:
   dbt-test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
     - uses: actions/checkout@v3
 
+    - name: Set up Docker Desktop
+      shell: pwsh
+      run: |
+        # Switch to Windows containers
+        & $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchDaemon
+
     - name: Build and run dbt tests
       env:
         GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+      shell: pwsh
       run: |
         # Create credentials directory and file
-        mkdir -p ~/.config/gcloud
-        echo "$GCP_CREDENTIALS" > ~/.config/gcloud/application_default_credentials.json
+        New-Item -Path "$env:USERPROFILE\.config\gcloud" -ItemType Directory -Force
+        $GCP_CREDENTIALS | Out-File "$env:USERPROFILE\.config\gcloud\application_default_credentials.json"
         
         # Build and run tests in docker
         docker compose build dbt-dev
-        docker compose run --rm \
-          -v ~/.config/gcloud:/home/dbtuser/.config/gcloud \
-          dbt-dev /bin/bash -c "
-            dbt debug && \
-            dbt deps && \
-            dbt seed && \
-            dbt compile --target dev && \
-            dbt test --target dev"
+        docker compose run --rm `
+          -v "$env:USERPROFILE\.config\gcloud:C:\Users\ContainerAdministrator\.config\gcloud" `
+          dbt-dev pwsh -Command `
+          "dbt debug; `
+           dbt deps; `
+           dbt seed; `
+           dbt compile --target dev; `
+           dbt test --target dev"
 
   dbt-docs:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: dbt-test
     
     steps:
     - uses: actions/checkout@v3
 
     - name: Generate DBT docs
+      shell: pwsh
       run: |
-        docker compose run --rm dbt-dev /bin/bash -c "
-          dbt deps && \
-          dbt seed && \
-          dbt docs generate"
+        docker compose run --rm dbt-dev pwsh -Command `
+          "dbt deps; `
+           dbt seed; `
+           dbt docs generate"
 
     - name: Upload docs artifact
       uses: actions/upload-artifact@v3
