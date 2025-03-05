@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   dbt-dev:
     build:
@@ -11,13 +9,17 @@ services:
       - LOCATION=asia-south1
       - DBT_PROJECT=eastern-amp-449614-e1
     volumes:
-      - ./:/home/dbtuser/project
-      - "E:/.config/gcloud/application_default_credentials.json:/home/dbtuser/.config/gcloud/application_default_credentials.json:ro"
+      - type: bind
+        source: .
+        target: /home/dbtuser/project
+      - type: bind
+        source: E:\.config\gcloud\application_default_credentials.json
+        target: /home/dbtuser/.config/gcloud/application_default_credentials.json
+        read_only: true
     ports:
-      - "8080:8080"  # dbt docs serve
-      - "8581:8581"  # dbt rpc server (optional)
+      - "8080:8080"
     working_dir: /home/dbtuser/project
-    entrypoint: bash
+    entrypoint: ["/bin/bash"]
     tty: true
     stdin_open: true
 
@@ -31,10 +33,25 @@ services:
       - LOCATION=asia-south1
       - DBT_PROJECT=eastern-amp-449614-e1
     volumes:
-      - ./:/home/dbtuser/project
-      - "E:/.config/gcloud/application_default_credentials.json:/home/dbtuser/.config/gcloud/application_default_credentials.json:ro"
+      - type: bind
+        source: .
+        target: /home/dbtuser/project
+      - type: bind
+        source: E:\.config\gcloud\application_default_credentials.json
+        target: /home/dbtuser/.config/gcloud/application_default_credentials.json
+        read_only: true
     ports:
-      - "8081:8080"
-      - "8582:8581"
+      - "8081:8081" 
     working_dir: /home/dbtuser/project
-    command: ["dbt", "run", "--profiles-dir", ".", "--target", "prod"]
+    entrypoint: ["/bin/bash"]
+    command: >
+      -c "
+      dbt debug --target prod &&
+      dbt deps &&
+      dbt seed --target prod &&
+      dbt run --target prod &&
+      dbt test --target prod &&
+      dbt docs generate --target prod &&
+      dbt docs serve --port 8081 
+      "
+

@@ -26,7 +26,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 FROM base as dev
 USER dbtuser
 # Add development specific packages here if needed
-RUN pip install --no-cache-dir pytest pytest-cov
+RUN pip install --no-cache-dir pytest pytest-cov pytest-dbt-core
 
 # Production stage
 FROM base as prod
