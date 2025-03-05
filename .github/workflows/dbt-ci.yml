@@ -29,6 +29,29 @@ jobs:
       - name: Configure Docker for artifact registry
         run: gcloud auth configure-docker
 
+      - name: Create .dbt directory
+        run: mkdir -p .dbt
+
+      - name: Create profiles.yml
+        run: |
+          echo "default:
+            target: dev
+            outputs:
+              dev:
+                type: bigquery
+                method: service-account
+                project: ${{ secrets.GCP_PROJECT_ID }}
+                dataset: trips_data_all
+                threads: 4
+                timeout_seconds: 300
+                location: US
+                priority: interactive
+                keyfile: /root/.dbt/gcp-credentials.json" > .dbt/profiles.yml
+
+      - name: Save GCP credentials
+        run: |
+          echo '${{ secrets.GCP_SA_KEY }}' > .dbt/gcp-credentials.json
+
       - name: Build and run dbt container
         run: |
           docker build -t dbt-ci -f Dockerfile.dev .
@@ -37,7 +60,6 @@ jobs:
             -v ${{ github.workspace }}/.dbt:/root/.dbt \
             -e DBT_PROFILES_DIR=/root/.dbt \
             -e DBT_PROJECT_DIR=/usr/app \
-            -e GOOGLE_APPLICATION_CREDENTIALS=/root/.dbt/gcp-credentials.json \
             dbt-ci dbt debug
 
       - name: Run dbt tests
@@ -47,7 +69,6 @@ jobs:
             -v ${{ github.workspace }}/.dbt:/root/.dbt \
             -e DBT_PROFILES_DIR=/root/.dbt \
             -e DBT_PROJECT_DIR=/usr/app \
-            -e GOOGLE_APPLICATION_CREDENTIALS=/root/.dbt/gcp-credentials.json \
             dbt-ci dbt test
 
       - name: Run dbt build
@@ -57,5 +78,4 @@ jobs:
             -v ${{ github.workspace }}/.dbt:/root/.dbt \
             -e DBT_PROFILES_DIR=/root/.dbt \
             -e DBT_PROJECT_DIR=/usr/app \
-            -e GOOGLE_APPLICATION_CREDENTIALS=/root/.dbt/gcp-credentials.json \
             dbt-ci dbt build
