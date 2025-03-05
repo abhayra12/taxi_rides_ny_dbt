@@ -21,5 +21,20 @@ ENV DBT_PROJECT_DIR=/usr/app
 # Create .dbt directory
 RUN mkdir -p /root/.dbt
 
+# Add this content to create profiles.yml
+RUN echo '\
+default:\n\
+  target: dev\n\
+  outputs:\n\
+    dev:\n\
+      type: bigquery\n\
+      method: oauth\n\
+      project: eastern-amp-449614-e1\n\
+      dataset: trips_data_all\n\
+      threads: 4\n\
+      timeout_seconds: 300\n\
+      location: US\n\
+      priority: interactive\n' > /root/.dbt/profiles.yml
+
 # Set default command
 CMD ["dbt", "debug"] 
