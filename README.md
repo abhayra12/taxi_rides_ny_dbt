@@ -158,3 +158,43 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - NYC Taxi & Limousine Commission for the data
 - DBT community for the excellent tooling
+
+## 🚀 CI/CD Pipeline
+
+This project includes a GitHub Actions workflow for continuous integration. The pipeline runs on pull requests to the main branch and performs the following checks:
+
+- Builds the DBT container
+- Runs DBT debug to verify connections
+- Executes all DBT tests
+- Performs a full DBT build
+
+### Setting up CI/CD
+
+To enable the CI/CD pipeline, you need to set up the following secrets in your GitHub repository:
+
+1. `GCP_SA_KEY`: Your Google Cloud service account key JSON
+2. `GCP_PROJECT_ID`: Your Google Cloud project ID
+
+To add these secrets:
+1. Go to your GitHub repository
+2. Navigate to Settings > Secrets and variables > Actions
+3. Click "New repository secret"
+4. Add both secrets with their respective values
+
+### Local CI Testing
+
+To test the CI environment locally:
+
+```bash
+# Build the CI container
+docker build -t dbt-ci -f Dockerfile.dev .
+
+# Run the container with your local credentials
+docker run --rm \
+  -v $(pwd):/usr/app \
+  -v $(pwd)/.dbt:/root/.dbt \
+  -e DBT_PROFILES_DIR=/root/.dbt \
+  -e DBT_PROJECT_DIR=/usr/app \
+  -e GOOGLE_APPLICATION_CREDENTIALS=/root/.dbt/gcp-credentials.json \
+  dbt-ci dbt debug
+```
