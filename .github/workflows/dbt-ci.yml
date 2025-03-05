@@ -1,64 +1,45 @@
-name: DBT CI
+name: dbt CI
 
 on:
   pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
-  dbt-test:
-    runs-on: windows-latest
+  dbt-ci:
+    runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v3
-      with:
-        install: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Build and run dbt tests
-      env:
-        GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
-      shell: pwsh
-      run: |
-        # Create credentials directory and file
-        New-Item -Path "$env:USERPROFILE\.config\gcloud" -ItemType Directory -Force
-        $GCP_CREDENTIALS | Out-File "$env:USERPROFILE\.config\gcloud\application_default_credentials.json"
-        
-        # Build and run tests in docker
-        docker compose build dbt-dev
-        docker compose run --rm `
-          -v "$env:USERPROFILE\.config\gcloud:C:\Users\ContainerAdministrator\.config\gcloud" `
-          dbt-dev pwsh -Command `
-          "dbt debug; `
-           dbt deps; `
-           dbt seed; `
-           dbt compile --target dev; `
-           dbt test --target dev"
+      - name: Build and run dbt container
+        run: |
+          docker build -t dbt-ci -f Dockerfile.dev .
+          docker run --rm \
+            -v ${{ github.workspace }}:/usr/app \
+            -v ${{ github.workspace }}/.dbt:/root/.dbt \
+            -e DBT_PROFILES_DIR=/root/.dbt \
+            -e DBT_PROJECT_DIR=/usr/app \
+            dbt-ci dbt debug
 
-  dbt-docs:
-    runs-on: windows-latest
-    needs: dbt-test
-    
-    steps:
-    - uses: actions/checkout@v3
+      - name: Run dbt tests
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/usr/app \
+            -v ${{ github.workspace }}/.dbt:/root/.dbt \
+            -e DBT_PROFILES_DIR=/root/.dbt \
+            -e DBT_PROJECT_DIR=/usr/app \
+            dbt-ci dbt test
 
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v3
-      with:
-        install: true
-
-    - name: Generate DBT docs
-      shell: pwsh
-      run: |
-        docker compose run --rm dbt-dev pwsh -Command `
-          "dbt deps; `
-           dbt seed; `
-           dbt docs generate"
-
-    - name: Upload docs artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: dbt-docs
-        path: target/
+      - name: Run dbt build
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/usr/app \
+            -v ${{ github.workspace }}/.dbt:/root/.dbt \
+            -e DBT_PROFILES_DIR=/root/.dbt \
+            -e DBT_PROJECT_DIR=/usr/app \
+            dbt-ci dbt build
