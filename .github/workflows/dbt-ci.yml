@@ -44,7 +44,7 @@ jobs:
                 dataset: trips_data_all
                 threads: 4
                 timeout_seconds: 300
-                location: US
+                location: asia-south1
                 priority: interactive
                 keyfile: /root/.dbt/gcp-credentials.json" > .dbt/profiles.yml
 
@@ -55,6 +55,15 @@ jobs:
       - name: Build and run dbt container
         run: |
           docker build -t dbt-ci -f Dockerfile.dev .
+          docker run --rm \
+            -v ${{ github.workspace }}:/usr/app \
+            -v ${{ github.workspace }}/.dbt:/root/.dbt \
+            -e DBT_PROFILES_DIR=/root/.dbt \
+            -e DBT_PROJECT_DIR=/usr/app \
+            dbt-ci dbt deps
+
+      - name: Run dbt debug
+        run: |
           docker run --rm \
             -v ${{ github.workspace }}:/usr/app \
             -v ${{ github.workspace }}/.dbt:/root/.dbt \
