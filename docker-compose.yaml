@@ -9,13 +9,8 @@ services:
       - LOCATION=asia-south1
       - DBT_PROJECT=eastern-amp-449614-e1
     volumes:
-      - type: bind
-        source: .
-        target: /home/dbtuser/project
-      - type: bind
-        source: E:\.config\gcloud\application_default_credentials.json
-        target: /home/dbtuser/.config/gcloud/application_default_credentials.json
-        read_only: true
+      - .:/home/dbtuser/project
+      - ${HOME}/.config/gcloud:/home/dbtuser/.config/gcloud
     ports:
       - "8080:8080"
     working_dir: /home/dbtuser/project
@@ -33,13 +28,8 @@ services:
       - LOCATION=asia-south1
       - DBT_PROJECT=eastern-amp-449614-e1
     volumes:
-      - type: bind
-        source: .
-        target: /home/dbtuser/project
-      - type: bind
-        source: E:\.config\gcloud\application_default_credentials.json
-        target: /home/dbtuser/.config/gcloud/application_default_credentials.json
-        read_only: true
+      - .:/home/dbtuser/project
+      - ${HOME}/.config/gcloud:/home/dbtuser/.config/gcloud
     ports:
       - "8081:8081" 
     working_dir: /home/dbtuser/project
