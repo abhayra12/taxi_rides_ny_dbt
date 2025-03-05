@@ -16,9 +16,54 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Configure Docker for artifact registry
+        run: gcloud auth configure-docker
+
+      - name: Create .dbt directory
+        run: mkdir -p .dbt
+
+      - name: Create profiles.yml
+        run: |
+          echo "default:
+            target: dev
+            outputs:
+              dev:
+                type: bigquery
+                method: service-account
+                project: ${{ secrets.GCP_PROJECT_ID }}
+                dataset: trips_data_all
+                threads: 4
+                timeout_seconds: 300
+                location: asia-south1
+                priority: interactive
+                keyfile: /root/.dbt/gcp-credentials.json" > .dbt/profiles.yml
+
+      - name: Save GCP credentials
+        run: |
+          echo '${{ secrets.GCP_SA_KEY }}' > .dbt/gcp-credentials.json
+
       - name: Build and run dbt container
         run: |
           docker build -t dbt-ci -f Dockerfile.dev .
+          docker run --rm \
+            -v ${{ github.workspace }}:/usr/app \
+            -v ${{ github.workspace }}/.dbt:/root/.dbt \
+            -e DBT_PROFILES_DIR=/root/.dbt \
+            -e DBT_PROJECT_DIR=/usr/app \
+            dbt-ci dbt deps
+
+      - name: Run dbt debug
+        run: |
           docker run --rm \
             -v ${{ github.workspace }}:/usr/app \
             -v ${{ github.workspace }}/.dbt:/root/.dbt \
