@@ -1,4 +1,4 @@
-# DBT Project Setup Guide: NYC Taxi Rides
+# NYC Taxi Rides Analysis With DBT
 
 This guide will walk you through setting up and developing a DBT project for analyzing NYC taxi ride data using DBT Cloud.
 

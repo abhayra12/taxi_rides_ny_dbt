@@ -1,11 +1,26 @@
-taxi_rides_ny:
+default:
   target: dev
+
   outputs:
+
     dev:
-      type: postgres
-      host: "{{ env_var('DBT_HOST') }}"
-      port: "{{ env_var('DBT_PORT') | as_number }}"
-      user: "{{ env_var('DBT_USER') }}"
-      pass: "{{ env_var('DBT_PASSWORD') }}"
-      dbname: "{{ env_var('DBT_DATABASE') }}"
-      schema: "{{ env_var('DBT_SCHEMA') }}"
+      type: bigquery
+      method: oauth
+      project: eastern-amp-449614-e1
+      dataset: trips_data_all
+      timeout_seconds: 300
+      location: asia-south1
+      priority: interactive
+      retries: 0
+      threads: 8
+
+    prod:
+      type: bigquery
+      method: oauth
+      project: eastern-amp-449614-e1
+      dataset: trips_data_all_prod
+      timeout_seconds: 300
+      location: asia-south1
+      priority: interactive
+      retries: 1
+      threads: 12

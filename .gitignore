@@ -1,7 +1,35 @@
+# DBT specific
 target/
 dbt_packages/
 logs/
-.env
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.env
+
+# OS specific
 .DS_Store
+Thumbs.db
+
+# IDE specific
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Credentials and secrets
+*.json
+!profiles.yml
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Build artifacts
+dist/
+build/

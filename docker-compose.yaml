@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  dbt-dev:
+    build:
+      context: .
+      target: dev
+    environment:
+      - DBT_ENV=dev
+      - DEFAULT_DATASET=trips_data_all
+      - LOCATION=asia-south1
+      - DBT_PROJECT=eastern-amp-449614-e1
+    volumes:
+      - ./:/home/dbtuser/project
+      - "E:/.config/gcloud/application_default_credentials.json:/home/dbtuser/.config/gcloud/application_default_credentials.json:ro"
+    ports:
+      - "8080:8080"  # dbt docs serve
+      - "8581:8581"  # dbt rpc server (optional)
+    working_dir: /home/dbtuser/project
+    entrypoint: bash
+    tty: true
+    stdin_open: true
+
+  dbt-prod:
+    build:
+      context: .
+      target: prod
+    environment:
+      - DBT_ENV=prod
+      - DEFAULT_DATASET=trips_data_all_prod
+      - LOCATION=asia-south1
+      - DBT_PROJECT=eastern-amp-449614-e1
+    volumes:
+      - ./:/home/dbtuser/project
+      - "E:/.config/gcloud/application_default_credentials.json:/home/dbtuser/.config/gcloud/application_default_credentials.json:ro"
+    ports:
+      - "8081:8080"
+      - "8582:8581"
+    working_dir: /home/dbtuser/project
+    command: ["dbt", "run", "--profiles-dir", ".", "--target", "prod"]
