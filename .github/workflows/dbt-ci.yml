@@ -27,7 +27,9 @@ jobs:
         docker compose run --rm \
           -e GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-credentials.json \
           dbt-dev /bin/bash -c "
+            dbt debug && \
             dbt deps && \
+            dbt seed && \
             dbt compile --target dev && \
             dbt test --target dev
           "
@@ -43,6 +45,7 @@ jobs:
       run: |
         docker compose run --rm dbt-dev /bin/bash -c "
           dbt deps && \
+          dbt seed && \
           dbt docs generate
         "
 
@@ -50,4 +53,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: dbt-docs
-        path: target/ 
+        path: target/
