@@ -1,200 +1,170 @@
-# NYC Taxi Rides Data Pipeline with DBT
+# NYC Taxi Rides Analytics Pipeline
 
-This project implements a data pipeline for analyzing NYC taxi rides data using DBT (Data Build Tool). The pipeline processes raw taxi ride data from BigQuery and transforms it into analytical models for various insights.
+A comprehensive DBT project for transforming and analyzing NYC taxi rides data using BigQuery, Docker, and modern data engineering practices.
 
-## 🚀 Features
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Project Setup](#project-setup)
+- [Development Workflow](#development-workflow)
+- [Project Structure](#project-structure)
+- [Data Models](#data-models)
+- [Testing](#testing)
+- [Documentation](#documentation)
+- [Production Deployment](#production-deployment)
+- [Troubleshooting](#troubleshooting)
+- [Author](#author)
+- [License](#license)
 
-- Data transformation pipeline using DBT
-- Docker-based development and production environments
-- Automated testing and documentation generation
-- BigQuery integration for data storage and processing
-- Comprehensive data models for taxi ride analysis
+## Overview
 
-## 📋 Prerequisites
+This project implements an analytics pipeline that processes NYC taxi rides data. It transforms raw taxi data into analytical models for business insights using DBT (Data Build Tool) and BigQuery.
 
-Before you begin, ensure you have the following installed:
+![Architecture Diagram](proj_archi.png)
+
+## Features
+- 🔄 Modular data transformation pipeline
+- 🐳 Containerized development and production environments
+- 🧪 Automated testing suite
+- 📊 Comprehensive data models for taxi ride analytics
+- 📚 Auto-generated documentation
+- 🔄 CI/CD integration with GitHub Actions
+
+## Prerequisites
 - Docker and Docker Compose
-- Google Cloud Platform (GCP) account with BigQuery access
-- GCP credentials configured at `~/.config/gcloud/application_default_credentials.json`
+- GCP Account with BigQuery access
+- Git
+- GCP credentials file configured at:
+  - Windows: `E:/.config/gcloud/application_default_credentials.json`
+  - Linux/Mac: `~/.config/gcloud/application_default_credentials.json`
 
-## 🛠️ Project Setup
+## Project Setup
 
-1. Clone the repository:
+### 1. Clone Repository
 ```bash
-git clone https://github.com/abhayra12/taxi_rides_ny_dbt.git
-cd taxi_rides_ny_dbt
+git clone <repository-url>
+cd taxi_rides_ny
 ```
 
-2. Start the development container:
+### 2. Start Development Environment
 ```bash
+# Build and start development container
 docker compose up dbt-dev
-```
 
-3. Access the development container:
-```bash
+# Access the container
 docker compose exec dbt-dev bash
 ```
 
-4. Inside the container, run the following commands in sequence:
+### 3. Initialize Project
 ```bash
-# Install dependencies
+# Inside container
 dbt deps
-
-# Load seed data
 dbt seed
-
-# Compile models
 dbt compile
-
-# Run tests
 dbt test
-
-# Run models
 dbt run
 ```
 
-## 📚 Documentation
+## Development Workflow
 
-To generate and view the project documentation:
-
-1. Start the documentation container:
+### Daily Development Cycle
 ```bash
-docker compose up dbt-docs
+# 1. Start development container
+docker compose up dbt-dev -d
+
+# 2. Access container
+docker compose exec dbt-dev bash
+
+# 3. Run unified command
+dbt deps && dbt seed && dbt compile && dbt test && dbt run
 ```
 
-2. Access the documentation at: http://localhost:8080
-
-## 🏗️ Project Structure
-
-```
-taxi_rides_ny_dbt/
-├── models/              # DBT models
-├── tests/              # Custom tests
-├── macros/             # Reusable SQL macros
-├── seeds/              # Seed data files
-├── docker-compose.yml  # Docker configuration
-└── dbt_project.yml     # DBT project configuration
-```
-
-## 🔧 Development Workflow
-
-1. Make changes to your models in the `models/` directory
-2. Run tests to ensure data quality:
+### Documentation Generation
 ```bash
+# Generate and serve docs
+dbt docs generate && dbt docs serve --port 8080
+```
+
+## Project Structure
+```
+taxi_rides_ny/
+├── models/
+│   ├── core/              # Core business logic models
+│   └── staging/           # Initial data transformation
+├── macros/               # Reusable SQL functions
+├── tests/                # Custom test definitions
+├── seeds/                # Static reference data
+├── analyses/             # Ad-hoc analyses
+├── docs/                 # Project documentation
+└── docker-compose.yaml   # Container configuration
+```
+
+## Data Models
+
+### Staging Models
+- `stg_green_tripdata`: Green taxi trip data transformation
+- `stg_yellow_tripdata`: Yellow taxi trip data transformation
+
+### Core Models
+- `fact_trips`: Main fact table combining green and yellow taxi data
+- `dim_zones`: Dimensional table for taxi zones
+- `dm_monthly_zone_revenue`: Monthly revenue aggregations by zone
+
+## Testing
+```bash
+# Run all tests
 dbt test
+
+# Test specific models
+dbt test --select model_name
 ```
-3. Compile and run your models:
-```bash
-dbt compile && dbt run
-```
-4. Generate updated documentation:
+
+## Documentation
+Access documentation at http://localhost:8080 after running:
 ```bash
 dbt docs generate && dbt docs serve --port 8080
 ```
 
-## 🧹 Cleanup
+## Production Deployment
 
-To clean up the project:
-
+### Start Production Environment
 ```bash
-# Stop and remove containers
-docker compose down --volumes --remove-orphans
-
-# Clean DBT artifacts
-rm -rf target/
-rm -rf dbt_packages/
-rm -rf logs/
-```
-
-## 🚀 Production Deployment
-
-For production deployment:
-
-```bash
-# Build and run production container
-docker compose build dbt-prod
+# Build and start production container
 docker compose up dbt-prod
 ```
 
-Production environment differences:
-- Uses `trips_data_prod` dataset
-- Runs with 12 threads
-- Documentation served on port 8081
-- Automatically runs models, tests, and generates documentation
+### Production Features
+- Uses `trips_data_all_prod` dataset
+- 12 concurrent threads
+- Documentation on port 8081
+- Automated model runs and testing
 
-## ⚠️ Troubleshooting
+## Troubleshooting
 
-Common issues and solutions:
+### Common Issues
 
-1. **Container Access Issues**
-   - Check container status: `docker compose ps`
-   - Ensure Docker daemon is running
-
-2. **Documentation Server Issues**
-   - Verify port 8080 is not in use
-   - Check container logs: `docker compose logs dbt-docs`
-
-3. **Authentication Errors**
-   - Verify GCP credentials are correctly configured
-   - Check credentials file path and permissions
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 👥 Authors
-
-- Abhay Raj - Initial work
-
-## 🙏 Acknowledgments
-
-- NYC Taxi & Limousine Commission for the data
-- DBT community for the excellent tooling
-
-## 🚀 CI/CD Pipeline
-
-This project includes a GitHub Actions workflow for continuous integration. The pipeline runs on pull requests to the main branch and performs the following checks:
-
-- Builds the DBT container
-- Runs DBT debug to verify connections
-- Executes all DBT tests
-- Performs a full DBT build
-
-### Setting up CI/CD
-
-To enable the CI/CD pipeline, you need to set up the following secrets in your GitHub repository:
-
-1. `GCP_SA_KEY`: Your Google Cloud service account key JSON
-2. `GCP_PROJECT_ID`: Your Google Cloud project ID
-
-To add these secrets:
-1. Go to your GitHub repository
-2. Navigate to Settings > Secrets and variables > Actions
-3. Click "New repository secret"
-4. Add both secrets with their respective values
-
-### Local CI Testing
-
-To test the CI environment locally:
-
+#### Container Access
 ```bash
-# Build the CI container
-docker build -t dbt-ci -f Dockerfile.dev .
+# Check container status
+docker compose ps
 
-# Run the container with your local credentials
-docker run --rm \
-  -v $(pwd):/usr/app \
-  -v $(pwd)/.dbt:/root/.dbt \
-  -e DBT_PROFILES_DIR=/root/.dbt \
-  -e DBT_PROJECT_DIR=/usr/app \
-  -e GOOGLE_APPLICATION_CREDENTIALS=/root/.dbt/gcp-credentials.json \
-  dbt-ci dbt debug
+# View logs
+docker compose logs dbt-dev
 ```
+
+#### Clean Environment
+```bash
+# Remove containers and volumes
+docker compose down -v
+
+# Clean DBT artifacts
+rm -rf target/ dbt_packages/ logs/
+```
+
+## Author
+**Abhay Ahirkar**
+- GitHub: [@abhayra12](https://github.com/abhayra12)
+
+## License
+This project is licensed under the MIT License. See the LICENSE file for details.
