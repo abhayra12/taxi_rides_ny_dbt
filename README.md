@@ -43,7 +43,7 @@ This project implements an analytics pipeline that processes NYC taxi rides data
 
 ### 1. Clone Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/abhayra12/taxi_rides_ny_dbt.git
 cd taxi_rides_ny
 ```
 
