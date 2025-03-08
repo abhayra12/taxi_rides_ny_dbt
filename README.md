@@ -21,7 +21,7 @@ A comprehensive DBT project for transforming and analyzing NYC taxi rides data u
 
 This project implements an analytics pipeline that processes NYC taxi rides data. It transforms raw taxi data into analytical models for business insights using DBT (Data Build Tool) and BigQuery.
 
-![Architecture Diagram](proj_archi.png)
+![Architecture Diagram](analyses/proj_archi.png)
 
 ## Features
 - 🔄 Modular data transformation pipeline
@@ -30,6 +30,8 @@ This project implements an analytics pipeline that processes NYC taxi rides data
 - 📊 Comprehensive data models for taxi ride analytics
 - 📚 Auto-generated documentation
 - 🔄 CI/CD integration with GitHub Actions
+
+![CI/CD job run](analyses/ci-job-run.png)
 
 ## Prerequisites
 - Docker and Docker Compose
@@ -43,7 +45,7 @@ This project implements an analytics pipeline that processes NYC taxi rides data
 
 ### 1. Clone Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/abhayra12/taxi_rides_ny_dbt.git
 cd taxi_rides_ny
 ```
 
